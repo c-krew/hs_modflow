@@ -1,5 +1,7 @@
 from django.http import JsonResponse, Http404, HttpResponse
-import requests
+from django.shortcuts import render, redirect, reverse
+import os
+from shutil import copyfile
 from hs_restclient import HydroShare
 from .app import HsModflow as app
 
@@ -33,3 +35,19 @@ def load_resource(request):
     #                                 check=False, exe_name='pymake/examples/temp/mf2005')
 
     return JsonResponse(return_obj)
+
+
+def read_file(request):
+
+    filename = request.POST.get('filename')
+    app_dir = app.get_app_workspace().path
+    filepath = os.path.join(app_dir, filename)
+
+    outfilename = filename.split(".")[0] + ".html"
+    outpath = os.path.join(app_dir, outfilename)
+
+    copyfile(src, dst)
+
+    '< link href = "txtstyle.css" rel = "stylesheet" type = "text/css" / >'
+
+    return render(request, {'file_content': file_content})

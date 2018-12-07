@@ -55,7 +55,7 @@ def home(request):
 
     modellist = get_all_models()
 
-    model_select = SelectInput(display_text='Select Favorite Models',
+    model_select = SelectInput(display_text='Select Recent Models',
                                 name='model_select',
                                 multiple=False,
                                 options=modellist,

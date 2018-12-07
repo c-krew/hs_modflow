@@ -37,6 +37,10 @@ function run_model (){
     alert("run model")
 }
 
+function load_page() {
+     document.getElementById("content").innerHTML='<object type="text/html" data="etsdrt.html" ></object>';
+}
+
 function load_model (){
     var resourceid = $("#model_select option:selected").attr("value")
     $("#resourceid").text(resourceid)
@@ -47,15 +51,15 @@ function load_model (){
         type: 'POST',
         data: {'resourceid' : resourceid},
         success: function (response) {
-            $("#tabs").empty()
+            $("#prodTabs").empty()
             $("#tabcontents").empty()
             for (var i = 0; i < response['filelist'].length; i++) {
                 filename = response['filelist'][i]
                 // create the tab
-                $('<li><a href="#tab'+filename+'" data-toggle="tab">'+filename+'</a></li>').appendTo('#tabs');
+                $('<li><a href="#tab'+filename+'" id="'+filename+' data-url="">'+filename+'</a></li>').appendTo('#prodTabs');
 
                 // create the tab content
-                $('<div class="tab-pane" id="tab'+filename+'">tab' +filename+' content</div>').appendTo('.tab-content');
+                $('<div class="tab-pane" id="tab'+filename+'"><h1>'+filename+'</h1></div>').appendTo('.tab-content');
 
             document.getElementById("loading").innerHTML = '';
             }
