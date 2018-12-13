@@ -1,9 +1,14 @@
 import json
+import os
+from datetime import datetime as dt
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 
-from hs_restclient import HydroShare
+from django.http import JsonResponse, Http404, HttpResponse
+
+from oauthlib.oauth2 import TokenExpiredError
+from hs_restclient import HydroShare, HydroShareAuthOAuth2
 
 from .app import HsModflow as app
 
@@ -68,6 +73,11 @@ class Model(Base):
     hobid = Column(Integer, ForeignKey("hob.id"), nullable=True)
     vdfid = Column(Integer, ForeignKey("vdf.id"), nullable=True)
     vscid = Column(Integer, ForeignKey("vsc.id"), nullable=True)
+    drtid = Column(Integer, ForeignKey("drt.id"), nullable=True)
+    pvlid = Column(Integer, ForeignKey("pvl.id"), nullable=True)
+    etsid = Column(Integer, ForeignKey("ets.id"), nullable=True)
+    basid = Column(Integer, ForeignKey("bas.id"), nullable=True)
+    namid = Column(Integer, ForeignKey("nam.id"), nullable=True)
 
 class zone(Base):
     """
@@ -557,6 +567,56 @@ class vsc(Base):
     id = Column(Integer, primary_key=True)
     data = Column(String)
 
+class drt(Base):
+    """
+    SQLAlchemy Model DB Model
+    """
+    __tablename__ = 'drt'
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    data = Column(String)
+
+class pvl(Base):
+    """
+    SQLAlchemy Model DB Model
+    """
+    __tablename__ = 'pvl'
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    data = Column(String)
+
+class ets(Base):
+    """
+    SQLAlchemy Model DB Model
+    """
+    __tablename__ = 'ets'
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    data = Column(String)
+
+class bas(Base):
+    """
+    SQLAlchemy Model DB Model
+    """
+    __tablename__ = 'bas'
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    data = Column(String)
+
+class nam(Base):
+    """
+    SQLAlchemy Model DB Model
+    """
+    __tablename__ = 'nam'
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    data = Column(String)
+
 def init_primary_db(engine, first_time):
     """
     Initializer for the primary database.
@@ -625,14 +685,14 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
     # Add the model to the session, commit, and close
     session.add(fav)
 
-    model = session.query(Model).filter(Model.resourceid==resourceid).first()
+    model = session.query(Model).filter(Model.displayname==displayname).first()
     mainid = model.id
 
     for fi in filelist:
         ext = fi.split(".")[1]
         setattr(model, ext + 'id', mainid)
         with open(
-                '/Users/student/tethysdev/tethysapp-hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/' + fi,
+                os.path.join(app.get_app_workspace().path, fi),
                 'r'
         ) as myfile:
             data = myfile.read()
@@ -654,3 +714,131 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
     session.close()
 
     return
+
+def upload_to_hs(uploadtype, modelname, resource_name, resource_abstract, resource_key):
+
+    dbs = {
+        'zone':zone,
+        'mult':mult,
+        'pval':pval,
+        'bas6':bas6,
+        'dis':dis,
+        'disu':disu,
+        'bcf6':bcf6,
+        'lpf':lpf,
+        'hfb6':hfb6,
+        'chd':chd,
+        'fhb':fhb,
+        'wel':wel,
+        'mnw1':mnw1,
+        'mnw2':mnw2,
+        'mnwi':mnwi,
+        'drn':drn,
+        'rch':rch,
+        'evt':evt,
+        'ghb':ghb,
+        'gmg':gmg,
+        'lmt6':lmt6,
+        'lmt7':lmt7,
+        'riv':riv,
+        'str':str,
+        'swi2':swi2,
+        'pcg':pcg,
+        'pcgn':pcgn,
+        'nwt':nwt,
+        'pks':pks,
+        'sms':sms,
+        'sfr':sfr,
+        'lak':lak,
+        'gage':gage,
+        'sip':sip,
+        'sor':sor,
+        'de4':de4,
+        'oc':oc,
+        'uzf':uzf,
+        'upw':upw,
+        'sub':sub,
+        'swt':swt,
+        'hyd':hyd,
+        'hob':hob,
+        'vdf':vdf,
+        'vsc':vsc,
+        'drt':drt,
+        'pvl':pvl,
+        'ets':ets,
+        'bas':bas,
+        'nam':nam
+    }
+
+    hs = HydroShare()
+
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+
+    fileliststr = session.query(Model).filter(Model.displayname == modelname).first()
+    filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
+    mainid = fileliststr.id
+    resourceid = fileliststr.resourceid
+
+    if uploadtype == 'new':
+        abstract = resource_abstract
+        title = resource_name
+        keywords = (i for i in resource_key.split(','))
+        rtype = 'ModelInstanceResource'
+        new_resource_id = hs.createResource(rtype, title, keywords=keywords, abstract=abstract)
+
+    for fi in filelist:
+        parts = fi.split(".")
+        ext_data = session.query(dbs[parts[1]]).filter(dbs[parts[1]].id == mainid).first().data
+
+        if uploadtype == 'add':
+            date = dt.now().strftime("%m-%d-%Y-%X")
+            filename = "{}_{}.{}".format(parts[0], date, parts[1])
+        else:
+            filename = fi
+
+        filepath = os.path.join(app.get_app_workspace().path, filename)
+
+        with open(filepath,'w') as myfile:
+            myfile.write(ext_data)
+
+        if uploadtype == 'new':
+            hs.addResourceFile(new_resource_id, filepath, resource_filename=filename)
+        elif uploadtype == 'overwrite':
+            hs.deleteResourceFile(resourceid, filename)
+            hs.addResourceFile(resourceid, filepath, resource_filename=filename)
+        else:
+            hs.addResourceFile(resourceid, filepath, resource_filename=filename)
+
+        os.remove(filepath)
+
+
+    session.close()
+
+    return_obj = {'success': True}
+
+    return JsonResponse(return_obj)
+
+
+def load_resource(request):
+    try:
+        resourceid = request.POST.get('resourceid')
+
+        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+        session = Session()
+
+        fileliststr = session.query(Model).filter(Model.resourceid == resourceid).first().modelfiles
+        filelist = [i for i in fileliststr.strip('{}').split(',')]
+
+        session.close()
+
+        return_obj = {'success': True, 'filelist': filelist}
+
+    except:
+
+        return_obj = {'success': False}
+
+    # ml = flopy.modflow.Modflow.load(modelname + '.nam', model_ws=app_dir, verbose=False,
+    #                                 check=False, exe_name='pymake/examples/temp/mf2005')
+
+    return JsonResponse(return_obj)
