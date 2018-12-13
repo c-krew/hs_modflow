@@ -33,7 +33,7 @@ class HsModflow(TethysAppBase):
             UrlMap(
                 name='load-resource',
                 url='hs-modflow/load-resource',
-                controller='hs_modflow.ajax_controllers.load_resource'
+                controller='hs_modflow.model.load_resource'
             ),
         )
 

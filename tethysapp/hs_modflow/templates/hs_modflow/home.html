@@ -2,11 +2,11 @@
 {% load tethys_gizmos %}
 
 {% block header_buttons %}
+  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Download">
+    {% gizmo download_button %}
+  </div>
   <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Upload">
     {% gizmo upload_button %}
-  </div>
-  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Save">
-    {% gizmo save_button %}
   </div>
   <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Help">
     <a data-toggle="modal" data-target="#help-modal"><span class="glyphicon glyphicon-question-sign"></span></a>
@@ -34,8 +34,8 @@
           <h5 class="modal-title" id="help-modal-label">Help</h5>
         </div>
         <div class="modal-body">
-          <p>Start by clicking the "Upload from Hydroshare" button and enter the resource ID. Fill in the necessary information for the model and
-          then click on "upload". Once the model is uploaded and the inputs are visualized, click on "Run Model" on the left side of the
+          <p>Start by clicking the "Download from Hydroshare" button and enter the resource ID. Fill in the necessary information for the model and
+          then click on "download". Select the model in the dropdown and click on "load model", click on "Run Model" on the left side of the
           screen to run the model and see the results. Inputs can be edited and saved back to hydroshre by clicking the "Save to Hydroshare"
           button.</p>
           <p>Hydroshare models must be public resources in order to use them in the application.</p>
@@ -43,6 +43,29 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="download-modal" tabindex="-1" role="dialog" aria-labelledby="download-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="download-modal-label">Model Download from Hydroshare</h5>
+        </div>
+        <div class="modal-body">
+          <form id="download-model-form" method="post">
+            {% csrf_token %}
+            {% gizmo resourceid_input %}
+            {% gizmo resourcedisplay_input %}
+            {% gizmo modeltype_select %}
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" form="download-model-form" class="btn btn-primary" name="download-button">OK</button>
         </div>
       </div>
     </div>
@@ -58,12 +81,16 @@
         <div class="modal-body">
           <form id="add-model-form" method="post">
             {% csrf_token %}
-            {% gizmo resourceid_input %}
-            {% gizmo resourcedisplay_input %}
-            {% gizmo modeltype_select %}
             <div>
-              <label for="favoritecheck">Add to Favorites</label>
-              <input type="checkbox" id="favoritecheck" name="favoritecheck" checked>
+              {% gizmo modelname_select %}
+            </div>
+            <input type="radio" name="uploadtype" value="overwrite" checked> Overwrite Existing Resource<br>
+            <input type="radio" name="uploadtype" value="add"> Add to Existing Resource<br>
+            <input type="radio" name="uploadtype" value="new"> Create New Resource
+            <div id="new-resource" class="hidden">
+              {% gizmo resourcename_input %}
+              {% gizmo resourceabstract_input %}
+              {% gizmo resourcekey_input %}
             </div>
           </form>
         </div>

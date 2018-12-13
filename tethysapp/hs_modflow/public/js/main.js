@@ -66,3 +66,12 @@ function load_model (){
         }
     })
 }
+
+$('input[type=radio][name=uploadtype]').change(function() {
+    if (this.value == 'new') {
+        $("#new-resource").removeClass("hidden");
+    }
+    else {
+        $("#new-resource").addClass("hidden");
+    }
+});
