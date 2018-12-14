@@ -40,6 +40,26 @@ class HsModflow(TethysAppBase):
                 url='hs-modflow/search',
                 controller='hs_modflow.ajax_controllers.search'
             ),
+            UrlMap(
+                name='load-text-file',
+                url='hs-modflow/load-text-file',
+                controller='hs_modflow.ajax_controllers.load_text_file'
+            ),
+            UrlMap(
+                name='save-text-file',
+                url='hs-modflow/save-text-file',
+                controller='hs_modflow.ajax_controllers.save_text_file'
+            ),
+            UrlMap(
+                name='save-new-entry',
+                url='hs-modflow/save-new-entry',
+                controller='hs_modflow.ajax_controllers.save_new_entry'
+            ),
+            UrlMap(
+                name='get-db-files',
+                url='hs-modflow/get-db-files',
+                controller='hs_modflow.model.get_files_from_database'
+            ),
         )
 
         return url_maps

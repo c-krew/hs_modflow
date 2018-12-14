@@ -821,6 +821,176 @@ def upload_to_hs(uploadtype, modelname, resource_name, resource_abstract, resour
 
     return JsonResponse(return_obj)
 
+def get_files_from_database(request):
+
+    displayname = request.POST.get('displayname')
+
+    dbs = {
+       'zone':zone,
+       'mult':mult,
+       'pval':pval,
+       'bas6':bas6,
+       'dis':dis,
+       'disu':disu,
+       'bcf6':bcf6,
+       'lpf':lpf,
+       'hfb6':hfb6,
+       'chd':chd,
+       'fhb':fhb,
+       'wel':wel,
+       'mnw1':mnw1,
+       'mnw2':mnw2,
+       'mnwi':mnwi,
+       'drn':drn,
+       'rch':rch,
+       'evt':evt,
+       'ghb':ghb,
+       'gmg':gmg,
+       'lmt6':lmt6,
+       'lmt7':lmt7,
+       'riv':riv,
+       'str':str,
+       'swi2':swi2,
+       'pcg':pcg,
+       'pcgn':pcgn,
+       'nwt':nwt,
+       'pks':pks,
+       'sms':sms,
+       'sfr':sfr,
+       'lak':lak,
+       'gage':gage,
+       'sip':sip,
+       'sor':sor,
+       'de4':de4,
+       'oc':oc,
+       'uzf':uzf,
+       'upw':upw,
+       'sub':sub,
+       'swt':swt,
+       'hyd':hyd,
+       'hob':hob,
+       'vdf':vdf,
+       'vsc':vsc,
+       'drt':drt,
+       'pvl':pvl,
+       'ets':ets,
+       'bas':bas,
+       'nam':nam,
+    }
+
+
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+
+    fileliststr = session.query(Model).filter(Model.displayname == displayname).first()
+    filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
+    mainid = fileliststr.id
+
+
+    for fi in filelist:
+       ext = fi.split(".")[1]
+       ext_data = session.query(dbs[ext]).filter(dbs[ext].id == mainid).first().data
+       filepath = os.path.join(app.get_app_workspace().path, fi)
+       # filepath = os.path.join('/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/', fi)
+       with open(
+               filepath,
+               'w'
+       ) as myfile:
+           myfile.write(ext_data)
+
+
+    session.close()
+
+    return_obj = {'success': True}
+
+    return JsonResponse(return_obj)
+
+def save_to_db(resourceid, displayname, modeltype):
+
+    dbs = {
+       'zone':zone,
+       'mult':mult,
+       'pval':pval,
+       'bas6':bas6,
+       'dis':dis,
+       'disu':disu,
+       'bcf6':bcf6,
+       'lpf':lpf,
+       'hfb6':hfb6,
+       'chd':chd,
+       'fhb':fhb,
+       'wel':wel,
+       'mnw1':mnw1,
+       'mnw2':mnw2,
+       'mnwi':mnwi,
+       'drn':drn,
+       'rch':rch,
+       'evt':evt,
+       'ghb':ghb,
+       'gmg':gmg,
+       'lmt6':lmt6,
+       'lmt7':lmt7,
+       'riv':riv,
+       'str':str,
+       'swi2':swi2,
+       'pcg':pcg,
+       'pcgn':pcgn,
+       'nwt':nwt,
+       'pks':pks,
+       'sms':sms,
+       'sfr':sfr,
+       'lak':lak,
+       'gage':gage,
+       'sip':sip,
+       'sor':sor,
+       'de4':de4,
+       'oc':oc,
+       'uzf':uzf,
+       'upw':upw,
+       'sub':sub,
+       'swt':swt,
+       'hyd':hyd,
+       'hob':hob,
+       'vdf':vdf,
+       'vsc':vsc,
+       'drt':drt,
+       'pvl':pvl,
+       'ets':ets,
+       'bas':bas,
+       'nam':nam,
+    }
+
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+
+    # app_dir = app.get_app_workspace().path
+    app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+    fileliststr = session.query(Model).filter(Model.displayname == displayname).first()
+    filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
+
+    json.dumps(filelist)
+
+    model = session.query(Model).filter(Model.displayname==displayname).first()
+    mainid = model.id
+
+    for fi in filelist:
+        ext = fi.split(".")[1]
+        setattr(model, ext + 'id', mainid)
+        with open(
+                os.path.join(app_dir, fi),
+                'r'
+        ) as myfile:
+            data = myfile.read()
+            json.dumps(data)
+        session.query(dbs[ext]).filter(dbs[ext].id==mainid).one().data = data
+
+        os.remove(os.path.join(app_dir, fi))
+
+    session.commit()
+    session.close()
+
+    return
 
 def load_resource(request):
     try:
@@ -844,3 +1014,108 @@ def load_resource(request):
     #                                 check=False, exe_name='pymake/examples/temp/mf2005')
 
     return JsonResponse(return_obj)
+
+def save_to_db_newentry(resourceid, displayname, modeltype):
+
+    dbs = {
+       'zone':zone,
+       'mult':mult,
+       'pval':pval,
+       'bas6':bas6,
+       'dis':dis,
+       'disu':disu,
+       'bcf6':bcf6,
+       'lpf':lpf,
+       'hfb6':hfb6,
+       'chd':chd,
+       'fhb':fhb,
+       'wel':wel,
+       'mnw1':mnw1,
+       'mnw2':mnw2,
+       'mnwi':mnwi,
+       'drn':drn,
+       'rch':rch,
+       'evt':evt,
+       'ghb':ghb,
+       'gmg':gmg,
+       'lmt6':lmt6,
+       'lmt7':lmt7,
+       'riv':riv,
+       'str':str,
+       'swi2':swi2,
+       'pcg':pcg,
+       'pcgn':pcgn,
+       'nwt':nwt,
+       'pks':pks,
+       'sms':sms,
+       'sfr':sfr,
+       'lak':lak,
+       'gage':gage,
+       'sip':sip,
+       'sor':sor,
+       'de4':de4,
+       'oc':oc,
+       'uzf':uzf,
+       'upw':upw,
+       'sub':sub,
+       'swt':swt,
+       'hyd':hyd,
+       'hob':hob,
+       'vdf':vdf,
+       'vsc':vsc,
+       'drt':drt,
+       'pvl':pvl,
+       'ets':ets,
+       'bas':bas,
+       'nam':nam,
+    }
+
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+
+
+    app_dir = app.get_app_workspace().path
+    # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+
+    fileliststr = session.query(Model).filter(Model.displayname == displayname).first()
+    filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
+
+    json.dumps(filelist)
+    fav = Model(
+        resourceid=resourceid,
+        displayname=displayname,
+        modeltype=modeltype,
+        modelfiles=filelist
+    )
+
+    # Add the model to the session, commit, and close
+    session.add(fav)
+    session.commit()
+
+    model = session.query(Model).filter(Model.displayname==displayname).first()
+    mainid = model.id
+
+    for fi in filelist:
+        ext = fi.split(".")[1]
+        setattr(model, ext + 'id', mainid)
+        with open(
+                os.path.join(app_dir, fi),
+                'r'
+        ) as myfile:
+            data = myfile.read()
+            json.dumps(data)
+
+        tbl = dbs[ext](
+            id=mainid,
+            data=data,
+        )
+        # Add the model to the session, commit, and close
+        session.add(tbl)
+        os.remove(os.path.join(app_dir, fi))
+
+    session.commit()
+    session.close()
+
+    return
+

@@ -37,10 +37,6 @@ function run_model (){
     alert("run model")
 }
 
-function load_page() {
-     document.getElementById("content").innerHTML='<object type="text/html" data="etsdrt.html" ></object>';
-}
-
 function load_model (){
     var displayname = $("#model_select option:selected").attr("value")
     $("#displayname").text(displayname)
@@ -61,10 +57,132 @@ function load_model (){
                 // create the tab content
                 $('<div class="tab-pane" id="tab'+filename+'"><h1>'+filename+'</h1></div>').appendTo('.tab-content');
 
+            get_db_files();
+
+            $('.nav-tabs a:first').tab('show');
+
+            document.getElementById("inputTextToSave").style.display = "block";
+
             document.getElementById("loading").innerHTML = '';
             }
         }
     })
+}
+
+function enable_text_edit (){
+   document.getElementById("inputTextToSave").readOnly=false;
+}
+
+function get_db_files (){
+    var displayname = $("#model_select option:selected").attr("value");
+    $("#displayname").text(displayname);
+
+    $.ajax({
+        url: '/apps/hs-modflow/get-db-files/',
+        type: 'POST',
+        data: {'displayname' : displayname},
+        success: function (response) {
+
+
+        }
+    })
+}
+
+function load_text_files (){
+    var url = window.location.href;
+    var filename = url.slice(42);
+    $.ajax({
+        url: '/apps/hs-modflow/load-text-file/',
+        type: 'POST',
+        data: {'filename' : filename},
+        success: function (response) {
+
+            document.getElementById("inputTextToSave").value = response['filetext'];
+
+            document.getElementById("loading").innerHTML = '';
+
+        }
+    })
+}
+
+function save_text_files (){
+    var displayname = $("#model_select option:selected").attr("value");
+    $("#displayname").text(displayname);
+    var url = window.location.href;
+    var filename = url.slice(42);
+    var editedfiletext = document.getElementById("inputTextToSave").value
+
+    $.ajax({
+        url: '/apps/hs-modflow/save-text-file/',
+        type: 'POST',
+        data: {'filename' : filename, 'editedfiletext' : editedfiletext, 'displayname':displayname},
+        success: function (response) {
+
+            addSuccessMessage('File Saved Successfully', 'loading');
+
+            document.getElementById("inputTextToSave").readOnly=true;
+
+
+        }
+    })
+
+
+}
+
+function save_new_entry (){
+    var displayname = $("#model_select option:selected").attr("value");
+    $("#displayname").text(displayname);
+    var url = window.location.href;
+    var filename = url.slice(42);
+    var editedfiletext = document.getElementById("inputTextToSave").value;
+//    var display_name = document.getElementById("new_display_name_input").value;
+    var display_name = $("#new_display_name_input").val();
+
+    $.ajax({
+        url: '/apps/hs-modflow/save-new-entry/',
+        type: 'POST',
+        data: {'filename' : filename, 'editedfiletext' : editedfiletext, 'displayname':displayname, 'display_name':display_name},
+        success: function (response) {
+
+            addSuccessMessage('File Saved Successfully', 'loading');
+
+            document.getElementById("inputTextToSave").readOnly=true;
+        }
+    })
+}
+
+function addSuccessMessage(message, div_id) {
+    var div_id_string = '#message';
+    if (typeof div_id != 'undefined') {
+        div_id_string = '#'+div_id;
+    }
+    $(div_id_string).html(
+      '<span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>' +
+      '<span class="sr-only">Sucess:</span> ' + message
+    ).removeClass('hidden')
+    .removeClass('alert-danger')
+    .removeClass('alert-info')
+    .removeClass('alert-warning')
+    .addClass('alert')
+    .addClass('alert-success');
+}
+
+function show_save_modal (){
+    $("#save-modal").modal('show');
+
+}
+
+function yes_save_modal (){
+    $("#save-modal").modal('hide') = "none";
+    save_text_files();
+    $(this).tab('show');
+    load_text_files();
+}
+
+function switch_tab (){
+    $("#save-modal").modal('hide') = "none";
+    $(this).tab('show');
+    load_text_files();
 }
 
 $('input[type=radio][name=uploadtype]').change(function() {
@@ -128,4 +246,18 @@ $("#search-button").on('click',search)
 $(document).on("dblclick", "#search-table tr", function(e) {
     $("#resourceid_input").val(this.id);
     $('#search-results').modal('hide');
+});
+
+$(function(){
+
+    load_text_files();
+
+    document.getElementById("inputTextToSave").style.display = "none";
+
+    $('.nav-tabs').bind('click', function (e){
+            $(this).tab('show');
+            load_text_files();
+
+    });
+
 });

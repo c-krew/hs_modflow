@@ -1,5 +1,10 @@
 from django.http import JsonResponse, Http404, HttpResponse
+from django.shortcuts import render, redirect, reverse
+import os
+from shutil import copyfile
 from hs_restclient import HydroShare
+from .app import HsModflow as app
+from model import *
 
 def search(request):
 
@@ -39,5 +44,100 @@ def search(request):
 
     return_obj['success'] = False
     return_obj['resources'] = resourcelist
+
+    return JsonResponse(return_obj)
+
+def load_text_file(request):
+    try:
+
+        filename = request.POST.get('filename')
+        app_dir = app.get_app_workspace().path
+        # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+        filepath = os.path.join(app_dir, filename)
+
+        with open(
+                filepath,
+                'r'
+        ) as myfile:
+            filetext = myfile.read()
+
+        return_obj = {'success':True, 'filetext':filetext}
+
+
+    except:
+
+        return_obj = {'success':False}
+
+    return JsonResponse(return_obj)
+
+def save_text_file(request):
+    try:
+
+        filename = request.POST.get('filename')
+        editedfiletext = request.POST.get('editedfiletext')
+        resourceid = request.POST.get('resourceid')
+
+        app_dir = app.get_app_workspace().path
+        # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+        filepath = os.path.join(app_dir, filename)
+
+        file = open(filepath, 'w')
+        file.write(editedfiletext)
+        file.close()
+
+        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+        session = Session()
+        model = session.query(Model).filter(Model.resourceid==resourceid).first()
+        model_type = model.modeltype
+        display_name = model.displayname
+
+        session.close()
+
+        save_to_db(resourceid, display_name, model_type)
+
+        return_obj = {'success':True}
+
+    except:
+
+        return_obj = {'success':False}
+
+    return JsonResponse(return_obj)
+
+def save_new_entry(request):
+    try:
+
+        filename = request.POST.get('filename')
+        editedfiletext = request.POST.get('editedfiletext')
+        resourceid = request.POST.get('resourceid')
+        display_name = request.POST.get('display_name')
+
+        app_dir = app.get_app_workspace().path
+        # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+        filepath = os.path.join(app_dir, filename)
+
+        file = open(filepath, 'w')
+        file.write(editedfiletext)
+        file.close()
+
+        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+        session = Session()
+        model = session.query(Model).filter(Model.resourceid==resourceid).first()
+        model_type = model.modeltype
+
+        session.close()
+
+        save_to_db_newentry(resourceid, display_name, model_type)
+
+
+        return_obj = {'success':True}
+
+
+
+    except:
+
+        return_obj = {'success':False}
 
     return JsonResponse(return_obj)
