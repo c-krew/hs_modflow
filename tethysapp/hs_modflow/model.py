@@ -7,8 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from django.http import JsonResponse, Http404, HttpResponse
 
-from oauthlib.oauth2 import TokenExpiredError
-from hs_restclient import HydroShare, HydroShareAuthOAuth2
+from hs_restclient import HydroShare
 
 from .app import HsModflow as app
 
@@ -644,7 +643,7 @@ def get_all_models():
     # Query for all model records
     models = session.query(Model).all()
 
-    modellist = [(model.displayname, model.resourceid) for model in models]
+    modellist = [(model.displayname, model.displayname) for model in models]
 
     session.close()
 
@@ -691,8 +690,9 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
     for fi in filelist:
         ext = fi.split(".")[1]
         setattr(model, ext + 'id', mainid)
+        filepath = os.path.join(app.get_app_workspace().path, fi)
         with open(
-                os.path.join(app.get_app_workspace().path, fi),
+                filepath,
                 'r'
         ) as myfile:
             data = myfile.read()
@@ -708,6 +708,8 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
             id=mainid,
             data=data)
         conn.execute(ins)
+
+        os.remove(filepath)
 
     conn.close()
     session.commit()
@@ -822,12 +824,12 @@ def upload_to_hs(uploadtype, modelname, resource_name, resource_abstract, resour
 
 def load_resource(request):
     try:
-        resourceid = request.POST.get('resourceid')
+        displayname = request.POST.get('displayname')
 
         Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
         session = Session()
 
-        fileliststr = session.query(Model).filter(Model.resourceid == resourceid).first().modelfiles
+        fileliststr = session.query(Model).filter(Model.displayname == displayname).first().modelfiles
         filelist = [i for i in fileliststr.strip('{}').split(',')]
 
         session.close()

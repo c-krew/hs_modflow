@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block app_content %}
-  <h3>Resource ID = <span id="resourceid"></span></h3>
+  <h3>Resource ID = <span id="displayname"></span></h3>
   <div id="tabs">
     <ul class="nav nav-tabs" id="prodTabs">
     </ul>
@@ -58,7 +58,28 @@
         <div class="modal-body">
           <form id="download-model-form" method="post">
             {% csrf_token %}
-            {% gizmo resourceid_input %}
+            <p>Search options</p>
+            <input type="radio" name="searchtype" value="subject" checked> Subject
+            <input type="radio" name="searchtype" value="creator"> Creator
+            <input type="radio" name="searchtype" value="user"> User
+            <input type="radio" name="searchtype" value="owner"> Owner
+            <input type="radio" name="searchtype" value="author"> Author
+            <input type="radio" name="searchtype" value="group"> Group
+            <input type="radio" name="searchtype" value="full_text"> Full Text
+            <input type="radio" name="searchtype" value="type"> Resource Type
+            <div>
+              <div class="search-left">
+                {% gizmo search_input %}
+              </div>
+              <div class="search-right">
+                <button type="button" class="btn btn-info" id="search-button">
+                  <span class="glyphicon glyphicon-search"></span> Search
+                </button>
+              </div>
+            </div>
+            <div style="clear: left;">
+              {% gizmo resourceid_input %}
+            </div>
             {% gizmo resourcedisplay_input %}
             {% gizmo modeltype_select %}
           </form>
@@ -76,13 +97,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h5 class="modal-title" id="upload-modal-label">Model Upload from Hydroshare</h5>
+          <h5 class="modal-title" id="upload-modal-label">Model Upload to Hydroshare</h5>
         </div>
         <div class="modal-body">
           <form id="add-model-form" method="post">
             {% csrf_token %}
             <div>
-              {% gizmo modelname_select %}
+              {% gizmo model_select %}
             </div>
             <input type="radio" name="uploadtype" value="overwrite" checked> Overwrite Existing Resource<br>
             <input type="radio" name="uploadtype" value="add"> Add to Existing Resource<br>
@@ -97,6 +118,38 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="submit" form="add-model-form" class="btn btn-primary" name="upload-button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="search-results" tabindex="-1" role="dialog" aria-labelledby="search-results-label">
+    <div class="modal-dialog" role="document" style="margin-left: 5%;margin-right: 5%; width:90%">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="search-results-label">Search Results</h5>
+        </div>
+        <div class="modal-body">
+          <form id="search-results-form" method="post">
+            {% csrf_token %}
+            <div style="overflow: auto; height: 100%">
+              <table id="search-table" class='table table-bordered table-condensed table-striped table-hover'>
+                <thead>
+                  <tr>
+                    <th>Resource Title</th>
+                    <th>Owner</th>
+                    <th>Abstract</th>
+                    <th>Resource Type</th>
+                    <th>Resource ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+              </table>
+            </div>
+          </form>
         </div>
       </div>
     </div>

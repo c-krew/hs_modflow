@@ -42,14 +42,14 @@ function load_page() {
 }
 
 function load_model (){
-    var resourceid = $("#model_select option:selected").attr("value")
-    $("#resourceid").text(resourceid)
+    var displayname = $("#model_select option:selected").attr("value")
+    $("#displayname").text(displayname)
     waiting_output()
 
     $.ajax({
         url: '/apps/hs-modflow/load-resource/',
         type: 'POST',
-        data: {'resourceid' : resourceid},
+        data: {'displayname' : displayname},
         success: function (response) {
             $("#prodTabs").empty()
             $("#tabcontents").empty()
@@ -74,4 +74,58 @@ $('input[type=radio][name=uploadtype]').change(function() {
     else {
         $("#new-resource").addClass("hidden");
     }
+});
+
+$('input[type=radio][name=searchtype]').change(function() {
+    if (this.value == 'creator') {
+        $("#search_input").attr("placeholder", "email or username");
+    } else if (this.value == 'user') {
+        $("#search_input").attr("placeholder", "email or username");
+    } else if (this.value == 'owner') {
+        $("#search_input").attr("placeholder", "email or username");
+    } else if (this.value == 'author') {
+        $("#search_input").attr("placeholder", "email or username");
+    } else if (this.value == 'group') {
+        $("#search_input").attr("placeholder", "id or name");
+    } else if (this.value == 'subject') {
+        $("#search_input").attr("placeholder", "comma,separated,list,of,subjects");
+    } else if (this.value == 'type') {
+        $("#search_input").attr("placeholder", "resource type");
+    } else if (this.value == 'full_text') {
+        $("#search_input").attr("placeholder", "any text here");
+    }
+});
+
+function search (){
+    $('#search-results').modal('show');
+    var searchtype = $('input[name=searchtype]:checked').val();
+    var searchinput = $('#search_input').val();
+
+    $.ajax({
+        url: '/apps/hs-modflow/search/',
+        type: 'POST',
+        data: {'searchtype' : searchtype, 'searchinput': searchinput},
+        success: function (response) {
+            var resources = response['resources']
+
+            var i;
+            for (i = 0; i < resources.length; i++) {
+              var markup = "<tr id='" + resources[i][4] + "'><td>" + resources[i][0] +
+              "</td><td>" + resources[i][1] +
+              "</td><td>" + resources[i][2] +
+              "</td><td>" + resources[i][3] +
+              "</td><td>" + resources[i][4] +
+              "</td></tr>";
+              $("#search-table tbody").append(markup);
+            }
+
+        }
+    })
+}
+
+$("#search-button").on('click',search)
+
+$(document).on("dblclick", "#search-table tr", function(e) {
+    $("#resourceid_input").val(this.id);
+    $('#search-results').modal('hide');
 });

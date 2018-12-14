@@ -62,15 +62,6 @@ def home(request):
                                 select2_options={'placeholder': 'Select a number',
                                                  'allowClear': False})
 
-    modelnames = [(name,name) for name, id in modellist]
-
-    modelname_select = SelectInput(display_text='Select a Model',
-                                name='modelname_select',
-                                multiple=False,
-                                options=modelnames,
-                                select2_options={'placeholder': 'Select a number',
-                                                 'allowClear': False})
-
     modeltype_select = SelectInput(display_text='Select Model Type',
                                name='modeltype_select',
                                multiple=False,
@@ -79,8 +70,12 @@ def home(request):
                                                 'allowClear': False})
 
     resourceid_input = TextInput(display_text='Resource ID',
-                           name='resourceid_input',
-                           placeholder='')
+                                name='resourceid_input',
+                                placeholder='')
+
+    search_input = TextInput(display_text='Search',
+                           name='search_input',
+                           placeholder="comma,separated,list,of,subjects")
 
     resourcedisplay_input = TextInput(display_text='Resource Display Name for Favorite Select',
                                  name='resourcedisplay_input',
@@ -149,7 +144,7 @@ def home(request):
         # Get values
         has_errors = False
         uploadtype = request.POST.get('uploadtype', None)
-        modelname = request.POST.get('modelname_select', None)
+        modelname = request.POST.get('model_select', None)
         resource_name = request.POST.get('resource_name', None)
         resource_abstract = request.POST.get('resource_abstract', None)
         resource_key = request.POST.get('resource_key', None)
@@ -175,9 +170,9 @@ def home(request):
         'load_button': load_button,
         'run_button': run_button,
         'model_select': model_select,
-        'modelname_select': modelname_select,
         'modeltype_select':modeltype_select,
         'resourceid_input':resourceid_input,
+        'search_input':search_input,
         'resourcedisplay_input':resourcedisplay_input,
         'resourcename_input':resourcename_input,
         'resourceabstract_input':resourceabstract_input,
