@@ -250,8 +250,6 @@ $(document).on("dblclick", "#search-table tr", function(e) {
 
 $(function(){
 
-    load_text_files();
-
     document.getElementById("inputTextToSave").style.display = "none";
 
     $('.nav-tabs').bind('click', function (e){

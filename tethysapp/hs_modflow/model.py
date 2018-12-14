@@ -994,7 +994,16 @@ def save_to_db(resourceid, displayname, modeltype):
 
 def load_resource(request):
     try:
+
         displayname = request.POST.get('displayname')
+
+        app_ws = app.get_app_workspace().path
+        app_ws_list = os.listdir(app_ws)
+        for ws_file in app_ws_list:
+            if ws_file == '.gitkeep':
+                continue
+            else:
+                os.remove(os.path.join(app_ws,ws_file))
 
         Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
         session = Session()
