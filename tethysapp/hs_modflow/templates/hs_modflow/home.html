@@ -14,12 +14,17 @@
 {% endblock %}
 
 {% block app_content %}
-  <h3>Resource ID = <span id="displayname"></span></h3>
+  <h3>Model Name = <span id="displayname"></span></h3>
   <div id="tabs">
     <ul class="nav nav-tabs" id="prodTabs">
     </ul>
     <div class="tab-content" id="tabcontents">
     </div>
+    <tr>
+        <td colspan="3">
+            <textarea id="inputTextToSave" width="100%" cols="80" rows="25" readOnly></textarea>
+        </td>
+    </tr>
   </div>
 {% endblock %}
 
@@ -154,6 +159,44 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="save-modal" tabindex="-1" role="dialog" aria-labelledby="save-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="save-modal-label">Save to Database</h5>
+        </div>
+        <div class="modal-body">
+          Would you like to save these changes as a new database entry or overwrite the existing entry?
+        </div>
+        <div class="modal-footer">
+          {% gizmo new_entry_button %}
+          {% gizmo overwrite_button %}
+          {% gizmo dont_save_button %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="new-entry-modal" tabindex="-1" role="dialog" aria-labelledby="new-entry-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="new-entry-modal-label">Save to Database</h5>
+        </div>
+        <div class="modal-body">
+            {% gizmo new_display_name_input %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" id="new_entry_name" class="btn btn-primary" name="save-to-db-button" onclick="save_new_entry()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block app_navigation_items %}
@@ -169,9 +212,16 @@
   <div style="margin-top:10px">
     {% gizmo run_button %}
   </div>
-  <div id="loading">
+  <br>
+  <div id="loading"></div>
+  <br>
+  <div>
+    {% gizmo edit_button %}
+    {% gizmo save_text_button %}
   </div>
 {% endblock %}
 
 {% block app_actions %}
+  {% gizmo edit_button %}
+  {% gizmo save_text_button %}
 {% endblock %}

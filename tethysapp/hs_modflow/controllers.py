@@ -53,6 +53,69 @@ def home(request):
         }
     )
 
+    edit_button = Button(
+        display_text='',
+        name='edit-button',
+        icon='glyphicon glyphicon-edit',
+        style='warning',
+        attributes={
+            'data-toggle': 'tooltip',
+            'data-placement': 'top',
+            'title': 'Edit Text',
+            'align': 'left',
+            'onclick': 'enable_text_edit ()'
+        }
+    )
+
+    save_text_button = Button(
+        display_text='',
+        name='save-text-button',
+        icon='glyphicon glyphicon-floppy-disk',
+        style='success',
+        attributes={
+            'data-toggle':'modal',
+            'data-target':'#save-modal',
+            'data-placement':'top',
+            'title':'Save Text',
+        }
+    )
+
+    overwrite_button = Button(
+        display_text='Overwrite',
+        name='overwrite-button',
+        attributes={
+            'data-toggle':'tooltip',
+            'data-placement':'top',
+            'title':'Overwrite Existing',
+            'onclick': 'save_text_files ()'
+        }
+    )
+
+    new_entry_button = Button(
+        display_text='Save As New Entry',
+        name='new-entry-button',
+        attributes={
+            'data-toggle':'modal',
+            'data-target':'#new-entry-modal',
+            'data-placement':'top',
+            'title':'Save As New Entry',
+        }
+    )
+
+    dont_save_button = Button(
+        display_text='Dont Save',
+        name='dont-save-button',
+        attributes={
+            'data-toggle':'tooltip',
+            'data-placement':'top',
+            'title':'Dont Save',
+        }
+    )
+
+    new_display_name_input = TextInput(display_text='New Display Name',
+                           name='new_display_name_input',
+                           placeholder='')
+
     modellist = get_all_models()
 
     model_select = SelectInput(display_text='Select a Model',
@@ -165,6 +228,12 @@ def home(request):
         messages.error(request, "Please fix errors.")
 
     context = {
+        'overwrite_button': overwrite_button,
+        'new_entry_button': new_entry_button,
+        'dont_save_button': dont_save_button,
+        'edit_button': edit_button,
+        'save_text_button': save_text_button,
+        'new_display_name_input': new_display_name_input,
         'upload_button': upload_button,
         'download_button': download_button,
         'load_button': load_button,
