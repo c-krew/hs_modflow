@@ -35,6 +35,11 @@ class HsModflow(TethysAppBase):
                 url='hs-modflow/load-resource',
                 controller='hs_modflow.model.load_resource'
             ),
+            UrlMap(
+                name='search',
+                url='hs-modflow/search',
+                controller='hs_modflow.ajax_controllers.search'
+            ),
         )
 
         return url_maps
