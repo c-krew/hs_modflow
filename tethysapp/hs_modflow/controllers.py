@@ -109,6 +109,7 @@ def home(request):
             'data-toggle':'tooltip',
             'data-placement':'top',
             'title':'Dont Save',
+            'onclick': 'hideOverwriteModal ()'
         }
     )
 
