@@ -72,72 +72,59 @@ def load_text_file(request):
     return JsonResponse(return_obj)
 
 def save_text_file(request):
-    try:
 
-        filename = request.POST.get('filename')
-        editedfiletext = request.POST.get('editedfiletext')
-        resourceid = request.POST.get('resourceid')
+    filename = request.POST.get('filename')
+    editedfiletext = request.POST.get('editedfiletext')
+    displayname = request.POST.get('displayname')
 
-        app_dir = app.get_app_workspace().path
-        # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+    app_dir = app.get_app_workspace().path
+    # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
 
-        filepath = os.path.join(app_dir, filename)
+    filepath = os.path.join(app_dir, filename)
 
-        file = open(filepath, 'w')
-        file.write(editedfiletext)
-        file.close()
+    with open(filepath,'w') as myfile:
+        myfile.write(editedfiletext)
 
-        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
-        session = Session()
-        model = session.query(Model).filter(Model.resourceid==resourceid).first()
-        model_type = model.modeltype
-        display_name = model.displayname
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+    model = session.query(Model).filter(Model.displayname==displayname).first()
+    model_type = model.modeltype
+    resourceid = model.resourceid
 
-        session.close()
+    session.close()
 
-        save_to_db(resourceid, display_name, model_type)
+    save_to_db(resourceid, displayname, model_type)
 
-        return_obj = {'success':True}
-
-    except:
-
-        return_obj = {'success':False}
+    return_obj = {'success':True}
 
     return JsonResponse(return_obj)
 
 def save_new_entry(request):
-    try:
 
-        filename = request.POST.get('filename')
-        editedfiletext = request.POST.get('editedfiletext')
-        resourceid = request.POST.get('resourceid')
-        display_name = request.POST.get('display_name')
+    filename = request.POST.get('filename')
+    editedfiletext = request.POST.get('editedfiletext')
+    displayname = request.POST.get('displayname')
+    new_display_name = request.POST.get('new_display_name')
 
-        app_dir = app.get_app_workspace().path
-        # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+    app_dir = app.get_app_workspace().path
+    # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
 
-        filepath = os.path.join(app_dir, filename)
+    filepath = os.path.join(app_dir, filename)
 
-        file = open(filepath, 'w')
-        file.write(editedfiletext)
-        file.close()
+    file = open(filepath, 'w')
+    file.write(editedfiletext)
+    file.close()
 
-        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
-        session = Session()
-        model = session.query(Model).filter(Model.resourceid==resourceid).first()
-        model_type = model.modeltype
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+    model = session.query(Model).filter(Model.displayname==displayname).first()
+    model_type = model.modeltype
+    resourceid = model.resourceid
 
-        session.close()
+    session.close()
 
-        save_to_db_newentry(resourceid, display_name, model_type)
-
-
-        return_obj = {'success':True}
+    save_to_db_newentry(resourceid, displayname, new_display_name, model_type)
 
 
-
-    except:
-
-        return_obj = {'success':False}
-
+    return_obj = {'success':True}
     return JsonResponse(return_obj)

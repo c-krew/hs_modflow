@@ -650,6 +650,58 @@ def get_all_models():
     return modellist
 
 def save_hs_to_favorites(resourceid, displayname, modeltype):
+    dbs = {
+        'zone': zone,
+        'mult': mult,
+        'pval': pval,
+        'bas6': bas6,
+        'dis': dis,
+        'disu': disu,
+        'bcf6': bcf6,
+        'lpf': lpf,
+        'hfb6': hfb6,
+        'chd': chd,
+        'fhb': fhb,
+        'wel': wel,
+        'mnw1': mnw1,
+        'mnw2': mnw2,
+        'mnwi': mnwi,
+        'drn': drn,
+        'rch': rch,
+        'evt': evt,
+        'ghb': ghb,
+        'gmg': gmg,
+        'lmt6': lmt6,
+        'lmt7': lmt7,
+        'riv': riv,
+        'str': str,
+        'swi2': swi2,
+        'pcg': pcg,
+        'pcgn': pcgn,
+        'nwt': nwt,
+        'pks': pks,
+        'sms': sms,
+        'sfr': sfr,
+        'lak': lak,
+        'gage': gage,
+        'sip': sip,
+        'sor': sor,
+        'de4': de4,
+        'oc': oc,
+        'uzf': uzf,
+        'upw': upw,
+        'sub': sub,
+        'swt': swt,
+        'hyd': hyd,
+        'hob': hob,
+        'vdf': vdf,
+        'vsc': vsc,
+        'drt': drt,
+        'pvl': pvl,
+        'ets': ets,
+        'bas': bas,
+        'nam': nam,
+    }
 
     Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
     session = Session()
@@ -661,15 +713,10 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
 
     filelist = []
 
-    conn_engine = app.get_persistent_store_database('primary_db', as_url=True)
-    engine = create_engine(conn_engine)
-    meta = MetaData()
-    conn = engine.connect()
-
     for resource in resourcelist:
         url = resource['url'].split("/")
         fname = url[-1]
-        hs.getResourceFile('21c38e32c8f34de1a3073e738e7726bc', fname, destination=app_dir)
+        hs.getResourceFile(resourceid, fname, destination=app_dir)
         filelist.append(fname)
 
     json.dumps(filelist)
@@ -685,11 +732,11 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
     session.add(fav)
 
     model = session.query(Model).filter(Model.displayname==displayname).first()
+    print(model)
     mainid = model.id
 
     for fi in filelist:
         ext = fi.split(".")[1]
-        setattr(model, ext + 'id', mainid)
         filepath = os.path.join(app.get_app_workspace().path, fi)
         with open(
                 filepath,
@@ -698,21 +745,18 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
             data = myfile.read()
             json.dumps(data)
 
-        table = Table(ext, meta,
-                          Column('id', String, primary_key=True),
-                          Column('data', String)
-                          )
-        table.create(engine, checkfirst=True)
+        tbl = dbs[ext](
+            data=data,
+        )
+        # Add the model to the session, commit, and close
+        session.add(tbl)
+        session.commit()
 
-        ins = table.insert().values(
-            id=mainid,
-            data=data)
-        conn.execute(ins)
+        setattr(model, ext + 'id', tbl.id)
+        session.commit()
 
         os.remove(filepath)
 
-    conn.close()
-    session.commit()
     session.close()
 
     return
@@ -799,104 +843,13 @@ def upload_to_hs(uploadtype, modelname, resource_name, resource_abstract, resour
         else:
             filename = fi
 
-        filepath = os.path.join(app.get_app_workspace().path, filename)
-
-        with open(filepath,'w') as myfile:
-            myfile.write(ext_data)
-
         if uploadtype == 'new':
-            hs.addResourceFile(new_resource_id, filepath, resource_filename=filename)
+            hs.addResourceFile(new_resource_id, ext_data, resource_filename=filename)
         elif uploadtype == 'overwrite':
             hs.deleteResourceFile(resourceid, filename)
-            hs.addResourceFile(resourceid, filepath, resource_filename=filename)
+            hs.addResourceFile(resourceid, ext_data, resource_filename=filename)
         else:
-            hs.addResourceFile(resourceid, filepath, resource_filename=filename)
-
-        os.remove(filepath)
-
-
-    session.close()
-
-    return_obj = {'success': True}
-
-    return JsonResponse(return_obj)
-
-def get_files_from_database(request):
-
-    displayname = request.POST.get('displayname')
-
-    dbs = {
-       'zone':zone,
-       'mult':mult,
-       'pval':pval,
-       'bas6':bas6,
-       'dis':dis,
-       'disu':disu,
-       'bcf6':bcf6,
-       'lpf':lpf,
-       'hfb6':hfb6,
-       'chd':chd,
-       'fhb':fhb,
-       'wel':wel,
-       'mnw1':mnw1,
-       'mnw2':mnw2,
-       'mnwi':mnwi,
-       'drn':drn,
-       'rch':rch,
-       'evt':evt,
-       'ghb':ghb,
-       'gmg':gmg,
-       'lmt6':lmt6,
-       'lmt7':lmt7,
-       'riv':riv,
-       'str':str,
-       'swi2':swi2,
-       'pcg':pcg,
-       'pcgn':pcgn,
-       'nwt':nwt,
-       'pks':pks,
-       'sms':sms,
-       'sfr':sfr,
-       'lak':lak,
-       'gage':gage,
-       'sip':sip,
-       'sor':sor,
-       'de4':de4,
-       'oc':oc,
-       'uzf':uzf,
-       'upw':upw,
-       'sub':sub,
-       'swt':swt,
-       'hyd':hyd,
-       'hob':hob,
-       'vdf':vdf,
-       'vsc':vsc,
-       'drt':drt,
-       'pvl':pvl,
-       'ets':ets,
-       'bas':bas,
-       'nam':nam,
-    }
-
-
-    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
-    session = Session()
-
-    fileliststr = session.query(Model).filter(Model.displayname == displayname).first()
-    filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
-    mainid = fileliststr.id
-
-
-    for fi in filelist:
-       ext = fi.split(".")[1]
-       ext_data = session.query(dbs[ext]).filter(dbs[ext].id == mainid).first().data
-       filepath = os.path.join(app.get_app_workspace().path, fi)
-       # filepath = os.path.join('/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/', fi)
-       with open(
-               filepath,
-               'w'
-       ) as myfile:
-           myfile.write(ext_data)
+            hs.addResourceFile(resourceid, ext_data, resource_filename=filename)
 
 
     session.close()
@@ -963,8 +916,8 @@ def save_to_db(resourceid, displayname, modeltype):
     Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
     session = Session()
 
-    # app_dir = app.get_app_workspace().path
-    app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+    app_dir = app.get_app_workspace().path
+    # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
 
     fileliststr = session.query(Model).filter(Model.displayname == displayname).first()
     filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
@@ -993,29 +946,87 @@ def save_to_db(resourceid, displayname, modeltype):
     return
 
 def load_resource(request):
-    try:
-        displayname = request.POST.get('displayname')
 
-        Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
-        session = Session()
+    dbs = {
+        'zone': zone,
+        'mult': mult,
+        'pval': pval,
+        'bas6': bas6,
+        'dis': dis,
+        'disu': disu,
+        'bcf6': bcf6,
+        'lpf': lpf,
+        'hfb6': hfb6,
+        'chd': chd,
+        'fhb': fhb,
+        'wel': wel,
+        'mnw1': mnw1,
+        'mnw2': mnw2,
+        'mnwi': mnwi,
+        'drn': drn,
+        'rch': rch,
+        'evt': evt,
+        'ghb': ghb,
+        'gmg': gmg,
+        'lmt6': lmt6,
+        'lmt7': lmt7,
+        'riv': riv,
+        'str': str,
+        'swi2': swi2,
+        'pcg': pcg,
+        'pcgn': pcgn,
+        'nwt': nwt,
+        'pks': pks,
+        'sms': sms,
+        'sfr': sfr,
+        'lak': lak,
+        'gage': gage,
+        'sip': sip,
+        'sor': sor,
+        'de4': de4,
+        'oc': oc,
+        'uzf': uzf,
+        'upw': upw,
+        'sub': sub,
+        'swt': swt,
+        'hyd': hyd,
+        'hob': hob,
+        'vdf': vdf,
+        'vsc': vsc,
+        'drt': drt,
+        'pvl': pvl,
+        'ets': ets,
+        'bas': bas,
+        'nam': nam,
+    }
 
-        fileliststr = session.query(Model).filter(Model.displayname == displayname).first().modelfiles
-        filelist = [i for i in fileliststr.strip('{}').split(',')]
+    displayname = request.POST.get('displayname')
 
-        session.close()
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
 
-        return_obj = {'success': True, 'filelist': filelist}
+    model = session.query(Model).filter(Model.displayname == displayname).first()
+    filelist = [i for i in model.modelfiles.strip('{}').split(',')]
 
-    except:
+    for fi in filelist:
+        ext = fi.split(".")[1]
+        extid = getattr(model, ext + 'id')
+        ext_data = session.query(dbs[ext]).filter(dbs[ext].id == extid).first().data
+        filepath = os.path.join(app.get_app_workspace().path, fi)
+        # filepath = os.path.join('/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/', fi)
+        with open(
+                filepath,
+                'w'
+        ) as myfile:
+            myfile.write(ext_data)
 
-        return_obj = {'success': False}
+    session.close()
 
-    # ml = flopy.modflow.Modflow.load(modelname + '.nam', model_ws=app_dir, verbose=False,
-    #                                 check=False, exe_name='pymake/examples/temp/mf2005')
+    return_obj = {'success': True, 'filelist': filelist}
 
     return JsonResponse(return_obj)
 
-def save_to_db_newentry(resourceid, displayname, modeltype):
+def save_to_db_newentry(resourceid, displayname, new_display_name, modeltype):
 
     dbs = {
        'zone':zone,
@@ -1082,9 +1093,10 @@ def save_to_db_newentry(resourceid, displayname, modeltype):
     filelist = [i for i in fileliststr.modelfiles.strip('{}').split(',')]
 
     json.dumps(filelist)
+
     fav = Model(
         resourceid=resourceid,
-        displayname=displayname,
+        displayname=new_display_name,
         modeltype=modeltype,
         modelfiles=filelist
     )
@@ -1093,25 +1105,29 @@ def save_to_db_newentry(resourceid, displayname, modeltype):
     session.add(fav)
     session.commit()
 
-    model = session.query(Model).filter(Model.displayname==displayname).first()
+    model = session.query(Model).filter(Model.displayname==new_display_name).first()
     mainid = model.id
 
     for fi in filelist:
         ext = fi.split(".")[1]
-        setattr(model, ext + 'id', mainid)
+        filepath = os.path.join(app.get_app_workspace().path, fi)
         with open(
-                os.path.join(app_dir, fi),
+                filepath,
                 'r'
         ) as myfile:
             data = myfile.read()
             json.dumps(data)
 
         tbl = dbs[ext](
-            id=mainid,
             data=data,
         )
         # Add the model to the session, commit, and close
         session.add(tbl)
+        session.commit()
+
+        setattr(model, ext + 'id', tbl.id)
+        session.commit()
+
         os.remove(os.path.join(app_dir, fi))
 
     session.commit()

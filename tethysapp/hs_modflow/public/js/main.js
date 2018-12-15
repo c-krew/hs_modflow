@@ -57,8 +57,6 @@ function load_model (){
                 // create the tab content
                 $('<div class="tab-pane" id="tab'+filename+'"><h1>'+filename+'</h1></div>').appendTo('.tab-content');
 
-            get_db_files();
-
             $('.nav-tabs a:first').tab('show');
 
             document.getElementById("inputTextToSave").style.display = "block";
@@ -71,21 +69,6 @@ function load_model (){
 
 function enable_text_edit (){
    document.getElementById("inputTextToSave").readOnly=false;
-}
-
-function get_db_files (){
-    var displayname = $("#model_select option:selected").attr("value");
-    $("#displayname").text(displayname);
-
-    $.ajax({
-        url: '/apps/hs-modflow/get-db-files/',
-        type: 'POST',
-        data: {'displayname' : displayname},
-        success: function (response) {
-
-
-        }
-    })
 }
 
 function load_text_files (){
@@ -107,7 +90,6 @@ function load_text_files (){
 
 function save_text_files (){
     var displayname = $("#model_select option:selected").attr("value");
-    $("#displayname").text(displayname);
     var url = window.location.href;
     var filename = url.slice(42);
     var editedfiletext = document.getElementById("inputTextToSave").value
@@ -136,12 +118,12 @@ function save_new_entry (){
     var filename = url.slice(42);
     var editedfiletext = document.getElementById("inputTextToSave").value;
 //    var display_name = document.getElementById("new_display_name_input").value;
-    var display_name = $("#new_display_name_input").val();
+    var new_display_name = $("#new_display_name_input").val();
 
     $.ajax({
         url: '/apps/hs-modflow/save-new-entry/',
         type: 'POST',
-        data: {'filename' : filename, 'editedfiletext' : editedfiletext, 'displayname':displayname, 'display_name':display_name},
+        data: {'filename' : filename, 'editedfiletext' : editedfiletext, 'displayname':displayname, 'new_display_name':new_display_name},
         success: function (response) {
 
             addSuccessMessage('File Saved Successfully', 'loading');
@@ -250,7 +232,7 @@ $(document).on("dblclick", "#search-table tr", function(e) {
 
 $(function(){
 
-    load_text_files();
+//    load_text_files();
 
     document.getElementById("inputTextToSave").style.display = "none";
 
