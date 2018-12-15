@@ -28,6 +28,9 @@ $.ajaxSetup({
 });
 
 function waiting_output() {
+    $('#loading').html('').removeClass('alert')
+    .removeClass('alert-success');
+
     var wait_text = "<strong>Loading...</strong><br>" +
         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src='/static/hs_modflow/images/loading.gif'>";
     document.getElementById('loading').innerHTML = wait_text;
@@ -102,13 +105,11 @@ function save_text_files (){
 
             addSuccessMessage('File Saved Successfully', 'loading');
 
+            hideOverwriteModal();
+
             document.getElementById("inputTextToSave").readOnly=true;
-
-
         }
     })
-
-
 }
 
 function save_new_entry (){
@@ -128,10 +129,23 @@ function save_new_entry (){
 
             addSuccessMessage('File Saved Successfully', 'loading');
 
+            hideNewEntryModal();
+
+            window.location.href = 'http://127.0.0.1:8000/apps/hs-modflow/';
+
             document.getElementById("inputTextToSave").readOnly=true;
         }
     })
 }
+
+function hideOverwriteModal () {
+    $('#save-modal').modal('hide');
+}
+
+function hideNewEntryModal () {
+    $('#new-entry-modal').modal('hide');
+}
+
 
 function addSuccessMessage(message, div_id) {
     var div_id_string = '#message';
@@ -154,18 +168,6 @@ function show_save_modal (){
 
 }
 
-function yes_save_modal (){
-    $("#save-modal").modal('hide') = "none";
-    save_text_files();
-    $(this).tab('show');
-    load_text_files();
-}
-
-function switch_tab (){
-    $("#save-modal").modal('hide') = "none";
-    $(this).tab('show');
-    load_text_files();
-}
 
 $('input[type=radio][name=uploadtype]').change(function() {
     if (this.value == 'new') {
