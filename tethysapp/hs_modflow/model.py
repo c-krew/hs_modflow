@@ -1,5 +1,6 @@
 import json
 import os
+import flopy
 from datetime import datetime as dt
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
@@ -732,7 +733,6 @@ def save_hs_to_favorites(resourceid, displayname, modeltype):
     session.add(fav)
 
     model = session.query(Model).filter(Model.displayname==displayname).first()
-    print(model)
     mainid = model.id
 
     for fi in filelist:
@@ -1000,6 +1000,15 @@ def load_resource(request):
         'nam': nam,
     }
 
+    app_dir = app.get_app_workspace().path
+    ex_filelist = os.listdir(app_dir)
+
+    for ex_file in ex_filelist:
+        if ex_file == 'models':
+            continue
+        else:
+            os.remove(os.path.join(app_dir, ex_file))
+
     displayname = request.POST.get('displayname')
 
     Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
@@ -1135,3 +1144,65 @@ def save_to_db_newentry(resourceid, displayname, new_display_name, modeltype):
 
     return
 
+
+def run_model(request):
+
+    displayname = request.POST.get('displayname')
+
+    app_dir = app.get_app_workspace().path
+    # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+    ex_filelist = os.listdir(app_dir)
+
+    for ex_file in ex_filelist:
+        if ex_file == 'models':
+            continue
+        else:
+            if ex_file.split(".")[1] == 'nam':
+                modelnam = ex_file
+                break
+
+    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    session = Session()
+    model = session.query(Model).filter(Model.displayname == displayname).one()
+    model_type = model.modeltype
+
+    app_dir = app.get_app_workspace().path
+    # app_dir = '/Users/travismcstraw/tethysdev/hs_modflow/tethysapp/hs_modflow/workspaces/app_workspace/'
+
+    # first lets load an existing model
+    ml = flopy.modflow.Modflow.load(modelnam, model_ws=app_dir, verbose=False,
+                                    check=False, exe_name=os.path.join(app_dir, 'models', model_type))
+
+    ml.run_model()
+
+    mfl = flopy.utils.MfListBudget(os.path.join(app_dir, modelnam.split(".")[0] + ".lst"))
+    df_flux, df_vol = mfl.get_dataframes()
+    dict_flux = df_flux.to_dict()
+    dict_vol = df_vol.to_dict()
+
+    flux_results = {}
+    vol_results = {}
+
+    for key1 in dict_flux:
+        for key2 in dict_flux[key1]:
+            datetime = key2.strftime('%Y-%m-%d %X')
+            if datetime not in flux_results:
+                flux_results[datetime] = {}
+                flux_results[datetime][key1] = dict_flux[key1][key2]
+            else:
+                flux_results[datetime][key1] = dict_flux[key1][key2]
+
+    for key1 in dict_vol:
+        for key2 in dict_vol[key1]:
+            datetime = key2.strftime('%Y-%m-%d %X')
+            if datetime not in vol_results:
+                vol_results[datetime] = {}
+                vol_results[datetime][key1] = dict_flux[key1][key2]
+            else:
+                vol_results[datetime][key1] = dict_flux[key1][key2]
+
+    print(vol_results)
+
+    return_obj = {'success': True, 'vol': vol_results, "flux": flux_results}
+    return JsonResponse(return_obj)

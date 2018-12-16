@@ -55,6 +55,11 @@ class HsModflow(TethysAppBase):
                 url='hs-modflow/save-new-entry',
                 controller='hs_modflow.ajax_controllers.save_new_entry'
             ),
+            UrlMap(
+                name='run-model',
+                url='hs-modflow/run-model',
+                controller='hs_modflow.model.run_model'
+            ),
         )
 
         return url_maps

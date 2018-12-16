@@ -197,6 +197,79 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="model-result-modal" tabindex="-1" role="dialog" aria-labelledby="model-result-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h5 class="modal-title" id="nmodel-result-modal-label">Model Results</h5>
+        </div>
+        <div class="modal-body">
+          <div style="overflow: auto; height: 100%">
+            <h3>Flow Budget- Flux</h3>
+            <table id="fluxtable" class="table table-hover table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">TIMESTEP</th>
+                  <th scope="col">PERCENT_DISCREPANCY</th>
+                  <th scope="col">STORAGE_OUT</th>
+                  <th scope="col">TOTAL_OUT</th>
+                  <th scope="col">IN-OUT</th>
+                  <th scope="col">ET_SEGMENTS_OUT</th>
+                  <th scope="col">DRAINS_(DRT)_IN</th>
+                  <th scope="col">DRAINS_(DRT)_OUT</th>
+                  <th scope="col">STORAGE_IN</th>
+                  <th scope="col">RECHARGE_IN</th>
+                  <th scope="col">TOTAL_IN</th>
+                  <th scope="col">CONSTANT_HEAD_IN</th>
+                  <th scope="col">ET_SEGMENTS_IN</th>
+                  <th scope="col">RECHARGE_OUT</th>
+                  <th scope="col">CONSTANT_HEAD_OUT</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+          <br>
+          <br>
+          <div style="overflow: auto; height: 100%">
+            <h3>Flow Budget- Volume</h3>
+            <table id="voltable" class="table table-hover table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">TIMESTEP</th>
+                  <th scope="col">PERCENT_DISCREPANCY</th>
+                  <th scope="col">STORAGE_OUT</th>
+                  <th scope="col">TOTAL_OUT</th>
+                  <th scope="col">IN-OUT</th>
+                  <th scope="col">ET_SEGMENTS_OUT</th>
+                  <th scope="col">DRAINS_(DRT)_IN</th>
+                  <th scope="col">DRAINS_(DRT)_OUT</th>
+                  <th scope="col">STORAGE_IN</th>
+                  <th scope="col">RECHARGE_IN</th>
+                  <th scope="col">TOTAL_IN</th>
+                  <th scope="col">CONSTANT_HEAD_IN</th>
+                  <th scope="col">ET_SEGMENTS_IN</th>
+                  <th scope="col">RECHARGE_OUT</th>
+                  <th scope="col">CONSTANT_HEAD_OUT</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" id="new_entry_name" class="btn btn-primary" name="save-to-db-button" onclick="save_new_entry()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block app_navigation_items %}

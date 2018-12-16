@@ -37,7 +37,40 @@ function waiting_output() {
 }
 
 function run_model (){
-    alert("run model")
+    var displayname = $("#model_select option:selected").attr("value")
+    $("#displayname").text(displayname)
+    $("#model-result-modal").modal("show")
+    waiting_output()
+
+    $.ajax({
+        url: '/apps/hs-modflow/run-model/',
+        type: 'POST',
+        data: {'displayname' : displayname},
+        success: function (response) {
+            var i;
+            var y;
+            var fluxrow = "<tr>"
+            for (var timestep in response['flux']) {
+                fluxrow = fluxrow + "<td>" + timestep + "</td>"
+                for (var property in response['flux'][timestep]) {
+                    fluxrow = fluxrow + "<td>" + response['flux'][timestep][property] + "</td>"
+                }
+            }
+            fluxrow = fluxrow + "</tr>"
+            $("#fluxtable tbody").append(fluxrow)
+            var volrow = "<tr>"
+            for (var timestep in response['vol']) {
+                volrow = volrow + "<td>" + timestep + "</td>"
+                for (var property in response['vol'][timestep]) {
+                    volrow = volrow + "<td>" + response['vol'][timestep][property] + "</td>"
+                }
+            }
+            volrow = volrow + "</tr>"
+            $("#voltable tbody").append(volrow)
+
+            document.getElementById("loading").innerHTML = '';
+        }
+    })
 }
 
 function load_model (){

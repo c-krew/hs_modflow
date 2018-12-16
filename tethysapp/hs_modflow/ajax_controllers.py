@@ -4,6 +4,7 @@ import os
 from shutil import copyfile
 from hs_restclient import HydroShare
 from .app import HsModflow as app
+import flopy
 from model import *
 
 def search(request):
